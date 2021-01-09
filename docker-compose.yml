@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  database:
+    image: my_image_database
+    build:
+      context: ./mysql
+      dockerfile: dockerfile
+    container_name: my_ctn_mysql
+    environment:
+      - MYSQL_ROOT=root
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/custom_init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  php-fpm:
+    image: my_image_php-fpm
+    build:
+      context: ./php-fpm
+      dockerfile: dockerfile
+    container_name: my_ctn_php-fpm
+    volumes:
+      - /var/www/project:/var/www
+
+  nginx:
+    image: my_image_nginx
+    build:
+      context: ./nginx
+      dockerfile: dockerfile
+    container_name: my_ctn_nginx
+    depends_on:
+      - php-fpm
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/sites:/etc/nginx/sites-available
+      - /var/www/project:/var/www
+    ports:
+      - "80:80"
+    
